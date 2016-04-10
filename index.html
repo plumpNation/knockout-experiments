@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <title>Knockout experiments</title>
+        <script src="bower_components/knockout/dist/knockout.debug.js"></script>
+        <script src="components.js"></script>
+        <script src="app.js"></script>
+    </head>
+    <body>
+        <h1>Knockout experiments</h1>
+        <section id="todo-application">
+            <itsl-todo-input params="model: $root"></itsl-todo-input>
+            <itsl-todo-list params="model: $root"></itsl-todo-list>
+        </section>
+    </body>
+</html>

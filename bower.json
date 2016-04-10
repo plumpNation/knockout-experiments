@@ -1,0 +1,17 @@
+{
+  "name": "knockout-experiments",
+  "authors": [
+    "Gavin King <gavin.king@itslearning.com>"
+  ],
+  "description": "A repo to learn techniques in knockout",
+  "main": "index.html",
+  "license": "MIT",
+  "homepage": "",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
