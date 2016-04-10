@@ -4,7 +4,7 @@
     ko.components.register('itsl-todo-input', {
         viewModel: function (params) {
             this.onSubmit = function (formElement) {
-                params.model.items.push({text:formElement['new-todo'].value});
+                params.model.addItem({text:formElement['new-todo'].value});
             };
         },
 
