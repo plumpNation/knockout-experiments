@@ -5,16 +5,28 @@
   "main": "index.js",
   "license": "MIT",
   "scripts": {
-    "start": "parcel index.html"
+    "start": "parcel index.html",
+    "test": "ava"
   },
   "dependencies": {
     "@types/faker": "4.1.6",
+    "ava": "2.4.0",
     "faker": "4.1.0",
     "knockout": "3.4.2",
     "parcel-bundler": "1.12.4"
   },
   "devDependencies": {
     "@types/knockout": "3.4.66",
+    "ts-node": "8.4.1",
     "typescript": "3.6.3"
+  },
+  "ava": {
+    "compileEnhancements": false,
+    "extensions": [
+      "ts"
+    ],
+    "require": [
+      "ts-node/register"
+    ]
   }
 }
