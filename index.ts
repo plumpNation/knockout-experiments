@@ -18,9 +18,10 @@ class IndexViewModel {
 
     testObservableSubscriptionUpdate();
     testObservableSubscriptionUpdateDeferred();
-    testComputedClassProperty();
-    testPureComputedClassProperty();
-    testClassOverrideProperty();
+    testComputedClassPropertiesAfterUpdate();
+    testComputedClassPropertiesAfterUpdateDeferred();
+    testComputedClassPropertiesAfterOverride();
+    testComputedClassPropertiesAfterOverrideDeferred();
     testObservableArrayPush();
     testObservableArrayReplaceInnerSimple();
     testObservableArrayReplaceInnerComplex();
@@ -39,12 +40,11 @@ ko.applyBindings(viewModel);
 // /////////////////////////////////////////////////////////////////////////////
 
 function testObservableSubscriptionUpdate() {
-  ko.options.deferUpdates = false;
   const person = new Person('jeff', 60);
 
   person.age(35);
 
-  console.assert(person.ageCopy === 35, 'subscriptions be updated immediately');
+  console.assert(person.subscribedAge === 35, 'subscriptions be updated immediately');
 }
 
 function testObservableSubscriptionUpdateDeferred() {
@@ -54,38 +54,66 @@ function testObservableSubscriptionUpdateDeferred() {
 
   person.age(35);
 
-  console.assert(person.ageCopy === undefined, 'subscriptions should not be updated immediately');
+  console.assert(person.subscribedAge === undefined, 'subscriptions should not be updated immediately');
 
   setTimeout(() => {
-    console.assert(person.ageCopy === 35, 'subscriptions are deferred');
+    console.assert(person.subscribedAge === 35, 'subscriptions are deferred');
   }, 0);
 }
 
-function testComputedClassProperty() {
+function testComputedClassPropertiesAfterUpdate() {
   const person = new Person('jeff', 60);
 
+  // here is the udpate
   person.age(40);
 
-  console.assert(person.agePlusFive() === 45, 'computed values are updated instantly');
+  console.assert(person.computed() === 45, 'computed values are updated instantly');
+  console.assert(person.pureComputed() === 47, 'pureComputed values should be updated instantly');
 }
 
-function testPureComputedClassProperty() {
+function testComputedClassPropertiesAfterUpdateDeferred() {
+  ko.options.deferUpdates = true;
   const person = new Person('jeff', 60);
+  ko.options.deferUpdates = false;
 
-  person.age(20);
+  // here is the udpate
+  person.age(40);
 
-  console.assert(person.agePlusSeven() === 27, 'pureComputed values should be updated instantly');
+  console.assert(person.computed() === 45, 'computed values are updated instantly');
+  console.assert(person.pureComputed() === 47, 'pureComputed values should be updated instantly');
 }
 
-function testClassOverrideProperty() {
+function testComputedClassPropertiesAfterOverride() {
   const person = new Person('jeff', 60);
 
+  // here is the override
   person.age = ko.observable(20);
-  console.assert(person.agePlusSeven() === 27, 'pureComputed values should be updated instantly');
-  console.assert(person.agePlusFive() === 65, 'computed values are not updated');
+
+  console.assert(person.pureComputed() === 27, 'pureComputed values should be updated instantly');
+  console.assert(person.computed() === 65, 'computed values are not updated instantly');
 
   setTimeout(() => {
-    console.assert(person.ageCopy === undefined, 'subscription should be ignored');
+    console.assert(person.subscribedAge === undefined, 'subscription should be ignored');
+    console.assert(person.computed() === 65, 'computed values are never updated');
+  }, 2000);
+}
+
+function testComputedClassPropertiesAfterOverrideDeferred() {
+  ko.options.deferUpdates = true;
+  const person = new Person('jeff', 60);
+  ko.options.deferUpdates = false;
+
+  // here is the override
+  person.age = ko.observable(20);
+
+  console.assert(person.pureComputed() === 27, 'pureComputed values should be updated instantly');
+
+  // This is extremely weird. Computed has a different behaviour when deferUpdates was turned
+  // on when Person's observables were created.
+  console.assert(person.computed() === 25, 'computed values are updated instantly');
+
+  setTimeout(() => {
+    console.assert(person.subscribedAge === undefined, 'subscription should be ignored');
   }, 2000);
 }
 
