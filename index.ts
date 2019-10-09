@@ -11,10 +11,25 @@ ko.options.deferUpdates = true;
 class Person {
   name: string;
   age: KnockoutObservable<number>;
+  children: KnockoutObservableArray<string>;
+  ageCopy: number;
 
   constructor (name: string, age: number) {
     this.name = name;
     this.age = ko.observable(age);
+    this.children = ko.observableArray(['fred', 'harry']);
+
+    this.setupSubscriptions();
+  }
+
+  private setupSubscriptions = () => {
+    this.age.subscribe((age: number) => {
+      this.ageCopy = age;
+    });
+
+    this.children.subscribe((children: string[]) => {
+      console.log(children);
+    }, this, "arrayChange");
   }
 }
 
@@ -29,6 +44,9 @@ class IndexViewModel {
       .map(() => new Person(faker.name.firstName(), faker.random.number(60)));
 
     testObservableUpdate();
+    testObservableArrayPush();
+    testObservableArrayReplaceInnerSimple();
+    testObservableArrayReplaceInnerComplex();
 
     // Editable data
     this.persons = ko.observableArray(initialPersons);
@@ -48,5 +66,30 @@ function testObservableUpdate() {
 
   person.age(35);
 
-  console.assert(person.age() === 35, 'should be updated');
+  setTimeout(() => {
+    console.assert(person.ageCopy === 35, 'should be updated');
+  }, 0);
+}
+
+function testObservableArrayPush() {
+  const person = new Person('jeff', 60);
+
+  person.children.push('jeff junior');
+}
+
+function testObservableArrayReplaceInnerSimple() {
+  const person = new Person('jeff', 60);
+
+  const newChildren = person.children().concat('jeff junior');
+
+  person.children(newChildren);
+}
+
+function testObservableArrayReplaceInnerComplex() {
+  const person = new Person('jeff', 60);
+
+  const newChildren = person.children();
+
+  // this shows 3 changes, [deleted, added, added]
+  person.children([newChildren[1], 'jeff junior', newChildren[1]]);
 }
