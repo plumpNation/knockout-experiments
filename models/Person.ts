@@ -5,9 +5,16 @@ import ko from 'knockout';
  */
 export class Person {
   name: string;
+
+  // It seems like if you will have a computed class property like `agePlusFive`
+  // then ko.observable() must be initialised here.
   age: KnockoutObservable<number> = ko.observable();
+
+  // Not initialising this property here as there is no computed class property
+  // using it.
   children: KnockoutObservableArray<string>;
-  ageCopy: number;
+
+  subscribedAge: number;
 
   constructor (name: string, age: number) {
     this.name = name;
@@ -18,17 +25,17 @@ export class Person {
     this.setupSubscriptions();
   }
 
-  public agePlusFive: KnockoutComputed<number> = ko.computed(() => {
+  public computed: KnockoutComputed<number> = ko.computed(() => {
     return this.age && (this.age() + 5);
   });
 
-  public agePlusSeven: KnockoutComputed<number> = ko.pureComputed(() => {
+  public pureComputed: KnockoutComputed<number> = ko.pureComputed(() => {
     return this.age() + 7;
   });
 
   private setupSubscriptions = () => {
     this.age.subscribe((age: number) => {
-      this.ageCopy = age;
+      this.subscribedAge = age;
     });
 
     // this.children.subscribe((changes: string[]) => {

@@ -15,78 +15,78 @@ test.afterEach(() => {
 
 // /////////////////////////////////////////////////////////////////////////////
 
-test.serial('testObservableUpdate', t => {
+test.serial('testSubscription', t => {
   const person = new Person('jeff', 60);
 
   person.age(35);
 
-  t.is(person.ageCopy, 35, 'subscriptions are immediately executed');
+  t.is(person.subscribedAge, 35, 'subscriptions are immediately executed');
 });
 
-test.serial.cb('testObservableUpdateDeferred', t => {
+test.serial.cb('testSubscriptionDeferred', t => {
   ko.options.deferUpdates = true;
   const person = new Person('jeff', 60);
 
   person.age(35);
 
-  t.is(person.ageCopy, undefined, 'subscriptions should not be updated yet');
+  t.is(person.subscribedAge, undefined, 'subscriptions are not yet executed');
 
   setTimeout(() => {
-    t.is(person.ageCopy, 35, 'subscriptions are deferred');
+    t.is(person.subscribedAge, 35, 'subscriptions are now executed');
     t.end();
   }, 0);
 });
 
-// test.serial('testComputedClassProperty', t => {
-//   const person = new Person('jeff', 60);
+test.serial('testComputedClassProperty', t => {
+  const person = new Person('jeff', 60);
 
-//   person.age(40);
+  person.age(40);
 
-//   t.is(person.agePlusFive(), 45, 'computed values are updated instantly');
-// })
+  t.is(person.computed(), 45, 'computed values are available instantly');
+  t.is(person.pureComputed(), 47, 'pureComputed values are available instantly');
+});
 
-// test.serial('testPureComputedClassProperty', t => {
-//   const person = new Person('jeff', 60);
+test.serial('testComputedClassPropertyDeferred', t => {
+  ko.options.deferUpdates = true;
+  const person = new Person('jeff', 60);
 
-//   person.age(20);
+  person.age(40);
 
-//   t.is(person.agePlusSeven(), 27, 'pureComputed values should be updated instantly');
-// });
+  t.is(person.computed(), 45, 'computed values are available instantly');
+  t.is(person.pureComputed(), 47, 'pureComputed values are available instantly');
+});
 
-// test.serial.cb('testClassOverrideProperty', t => {
-//   ko.options.deferUpdates = true;
-//   const person = new Person('jeff', 60);
+test.serial.cb('testOverrideClassProperty', t => {
+  const person = new Person('jeff', 60);
 
-//   person.age = ko.observable(20);
+  person.age = ko.observable(20);
 
-//   t.is(person.agePlusSeven(), 27, 'pureComputed values should be updated instantly');
-//   t.is(person.agePlusFive(), 65, 'computed values are not updated');
+  t.is(person.pureComputed(), 27, 'pureComputed values are available instantly');
 
-//   setTimeout(() => {
-//     t.is(person.ageCopy, undefined, 'subscription should be ignored because we overwrote the value of age');
-//     t.end();
-//   }, 2000);
-// });
+  // NOTE: THIS IS VERY STRANGE. No defer, computed property not available yet,
+  // pureComputed is though.
+  t.is(person.computed(), 65, 'computed values are not available instantly updated');
 
-// test.serial('testObservableArrayPush', t => {
-//   const person = new Person('jeff', 60);
+  setTimeout(() => {
+    t.is(person.subscribedAge, undefined, 'subscription is never executed');
+    t.end();
+  }, 1000);
+});
 
-//   person.children.push('jeff junior');
-// });
+test.serial.cb('testOverrideClassPropertyDeferred', t => {
+  ko.options.deferUpdates = true;
+  const person = new Person('jeff', 60);
 
-// test.serial('testObservableArrayReplaceInnerSimple', t => {
-//   const person = new Person('jeff', 60);
+  person.age = ko.observable(20);
 
-//   const newChildren = person.children().concat('jeff junior');
+  t.is(person.pureComputed(), 27, 'pureComputed values are available instantly');
 
-//   person.children(newChildren);
-// });
+  // NOTE: THIS IS VERY STRANGE. Now we are deferring, the computed property is updated
+  // instantly and is using the correct value.
+  t.is(person.computed(), 25, 'computed values are available instantly updated');
 
-// test.serial('testObservableArrayReplaceInnerComplex', t => {
-//   const person = new Person('jeff', 60);
-
-//   const newChildren = person.children();
-
-//   // this shows 3 changes, [deleted, added, added]
-//   person.children([newChildren[1], 'jeff junior', newChildren[1]]);
-// });
+  setTimeout(() => {
+    t.is(person.subscribedAge, undefined, 'subscription is never executed');
+    t.end();
+  }, 1000);
+});
