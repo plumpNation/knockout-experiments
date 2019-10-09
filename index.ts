@@ -1,37 +1,9 @@
 import faker from 'faker';
 import ko from 'knockout';
 
-ko.options.deferUpdates = true;
+import { Person } from './models/Person';
 
 // /////////////////////////////////////////////////////////////////////////////
-
-/**
- * Class to represent a row in the seat reservations grid
- */
-class Person {
-  name: string;
-  age: KnockoutObservable<number>;
-  children: KnockoutObservableArray<string>;
-  ageCopy: number;
-
-  constructor (name: string, age: number) {
-    this.name = name;
-    this.age = ko.observable(age);
-    this.children = ko.observableArray(['fred', 'harry']);
-
-    this.setupSubscriptions();
-  }
-
-  private setupSubscriptions = () => {
-    this.age.subscribe((age: number) => {
-      this.ageCopy = age;
-    });
-
-    this.children.subscribe((children: string[]) => {
-      console.log(children);
-    }, this, "arrayChange");
-  }
-}
 
 /**
  * Overall viewmodel for this screen, along with initial state
@@ -40,10 +12,15 @@ class IndexViewModel {
   persons: KnockoutObservableArray<Person>;
 
   constructor() {
+
     const initialPersons: Person[] = Array.from(Array(10))
       .map(() => new Person(faker.name.firstName(), faker.random.number(60)));
 
-    testObservableUpdate();
+    testObservableSubscriptionUpdate();
+    testObservableSubscriptionUpdateDeferred();
+    testComputedClassProperty();
+    testPureComputedClassProperty();
+    testClassOverrideProperty();
     testObservableArrayPush();
     testObservableArrayReplaceInnerSimple();
     testObservableArrayReplaceInnerComplex();
@@ -61,14 +38,55 @@ ko.applyBindings(viewModel);
 
 // /////////////////////////////////////////////////////////////////////////////
 
-function testObservableUpdate() {
+function testObservableSubscriptionUpdate() {
+  ko.options.deferUpdates = false;
   const person = new Person('jeff', 60);
 
   person.age(35);
 
+  console.assert(person.ageCopy === 35, 'subscriptions be updated immediately');
+}
+
+function testObservableSubscriptionUpdateDeferred() {
+  ko.options.deferUpdates = true;
+  const person = new Person('jeff', 60);
+  ko.options.deferUpdates = false;
+
+  person.age(35);
+
+  console.assert(person.ageCopy === undefined, 'subscriptions should not be updated immediately');
+
   setTimeout(() => {
-    console.assert(person.ageCopy === 35, 'should be updated');
+    console.assert(person.ageCopy === 35, 'subscriptions are deferred');
   }, 0);
+}
+
+function testComputedClassProperty() {
+  const person = new Person('jeff', 60);
+
+  person.age(40);
+
+  console.assert(person.agePlusFive() === 45, 'computed values are updated instantly');
+}
+
+function testPureComputedClassProperty() {
+  const person = new Person('jeff', 60);
+
+  person.age(20);
+
+  console.assert(person.agePlusSeven() === 27, 'pureComputed values should be updated instantly');
+}
+
+function testClassOverrideProperty() {
+  const person = new Person('jeff', 60);
+
+  person.age = ko.observable(20);
+  console.assert(person.agePlusSeven() === 27, 'pureComputed values should be updated instantly');
+  console.assert(person.agePlusFive() === 65, 'computed values are not updated');
+
+  setTimeout(() => {
+    console.assert(person.ageCopy === undefined, 'subscription should be ignored');
+  }, 2000);
 }
 
 function testObservableArrayPush() {
