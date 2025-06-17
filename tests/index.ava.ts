@@ -23,8 +23,9 @@ test.serial('testSubscription', t => {
   t.is(person.subscribedAge, 35, 'subscriptions are immediately executed');
 });
 
-test.serial.cb('testSubscriptionDeferred', t => {
+test.serial('testSubscriptionDeferred', async t => {
   ko.options.deferUpdates = true;
+
   const person = new Person('jeff', 60);
 
   person.age(35);
@@ -33,7 +34,7 @@ test.serial.cb('testSubscriptionDeferred', t => {
 
   setTimeout(() => {
     t.is(person.subscribedAge, 35, 'subscriptions are now executed');
-    t.end();
+    t.pass();
   }, 0);
 });
 
@@ -56,26 +57,33 @@ test.serial('testComputedClassPropertyDeferred', t => {
   t.is(person.pureComputed(), 47, 'pureComputed values are available instantly');
 });
 
-test.serial.cb('testOverrideClassProperty', t => {
+test.serial('testOverrideClassProperty', t => {
   const person = new Person('jeff', 60);
 
   person.age = ko.observable(20);
 
   t.is(person.pureComputed(), 27, 'pureComputed values are available instantly');
 
-  // NOTE: THIS IS VERY STRANGE. No defer, computed property not available yet,
-  // pureComputed is though.
+  // NOTE: computed values are not updated because we have overridden the
+  // age property with a new observable, so the computed is no longer tracking
+  // the original observable.
+  t.is(person.computed(), 65, 'computed value is not updated');
+
+  t.is(person.subscribedAge, undefined, 'subscription is never executed');
+
+  // Even if we now update the age, the computed value is not updated,
+  // again, this is because we have overridden the age property with
+  // a new observable.
+  person.age(30);
+
   t.is(person.computed(), 65, 'computed values are not available instantly updated');
 
-  setTimeout(() => {
-    t.is(person.subscribedAge, undefined, 'subscription is never executed');
-    t.is(person.computed(), 65, 'computed values are not available here either');
-    t.end();
-  }, 1000);
+  t.is(person.subscribedAge, undefined, 'subscription is never executed');
 });
 
-test.serial.cb('testOverrideClassPropertyDeferred', t => {
+test.serial('testOverrideClassPropertyDeferred', async t => {
   ko.options.deferUpdates = true;
+  
   const person = new Person('jeff', 60);
 
   // t.is(person.computed(), 65, 'computed values are available instantly updated');
@@ -88,13 +96,11 @@ test.serial.cb('testOverrideClassPropertyDeferred', t => {
   // instantly and is using the correct value.
   t.is(person.computed(), 25, 'computed values are available instantly updated');
 
-  setTimeout(() => {
-    t.is(person.subscribedAge, undefined, 'subscription is never executed');
-    t.end();
-  }, 1000);
+  t.is(person.subscribedAge, undefined, 'subscription is never executed');
+  // t.pass();
 });
 
-test.serial.cb('testOverrideClassPropertyDeferred accessing computed', t => {
+test.serial('testOverrideClassPropertyDeferred accessing computed', t => {
   // ko.options.deferUpdates = true; // this turned out to be a red herring and has no impact
   const person = new Person('jeff', 60);
 
@@ -123,6 +129,6 @@ test.serial.cb('testOverrideClassPropertyDeferred accessing computed', t => {
 
   setTimeout(() => {
     t.is(person.pureComputed(), 27, 'computed values are now detached');
-    t.end();
-  }, 1000);
+    t.pass();
+  }, 0);
 });

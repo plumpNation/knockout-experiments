@@ -9,24 +9,22 @@
     "test": "ava"
   },
   "dependencies": {
-    "@types/faker": "4.1.6",
-    "ava": "2.4.0",
-    "faker": "4.1.0",
+    "@types/faker": "6.6.11",
+    "ava": "6.4.0",
+    "faker": "6.6.6",
     "knockout": "3.4.2",
-    "parcel-bundler": "1.12.4"
+    "parcel-bundler": "1.12.5"
   },
   "devDependencies": {
     "@types/knockout": "3.4.45",
-    "ts-node": "8.4.1",
-    "typescript": "3.6.3"
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3"
   },
   "ava": {
-    "compileEnhancements": false,
-    "extensions": [
-      "ts"
-    ],
-    "require": [
-      "ts-node/register"
+    "extensions": ["ts"],
+    "require": ["ts-node/register/transpile-only"],
+    "files": [
+      "tests/**/*.ava.ts"
     ]
   },
   "packageManager": "yarn@4.1.1"
