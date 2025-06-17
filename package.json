@@ -16,7 +16,7 @@
     "parcel-bundler": "1.12.4"
   },
   "devDependencies": {
-    "@types/knockout": "3.4.66",
+    "@types/knockout": "3.4.45",
     "ts-node": "8.4.1",
     "typescript": "3.6.3"
   },
@@ -28,5 +28,6 @@
     "require": [
       "ts-node/register"
     ]
-  }
+  },
+  "packageManager": "yarn@4.1.1"
 }
